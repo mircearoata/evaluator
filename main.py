@@ -63,15 +63,19 @@ def evaluate_test(test_no):
             ok = of.read().splitlines()
         if len(output) == 0:
             return [0, "No output"]
-        while ok[len(ok)-1] == '':
+        while ok[len(ok)-1] == '' or ok[len(ok)-1] == '\n':
             ok = ok[:len(ok)-1]
+        for j in range(len(ok)):
+            ok[j] = ok[j].strip()
         while output[len(output)-1] == '\n' or output[len(output)-1] == ' ':
             output = output[:len(output)-1]
+        for j in range(len(output)):
+            output[j] = output[j].strip()
         if len(output) != len(ok):
-            return [0, str.format("Diff: line {0}", max(len(output), len(ok)) + 1)]
+            return [0, str.format("Diff: line {0}(lines missing/too many)", max(len(output), len(ok)) + 1)]
         for line in range(max(len(output), len(ok))):
             if output[line] != ok[line]:
-                return [0, str.format("Diff: line {0}", line + 1)]
+                return [0, str.format("Diff: line {0}: {1} | {2}", line + 1, output[line], ok[line])]
     else:
         output, err = subprocess.Popen(str.format("{0}\\{1}\\tests\\{2}", local_dir, problem_name, args.verifier),
                                        cwd=str.format("{0}\\{1}\\exe", local_dir, problem_name),
