@@ -9,6 +9,6 @@ int main()
 {
 	int n;
 	in >> n;
-    out << n+1;
+    out << n;
     return 0;
 }

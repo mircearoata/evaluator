@@ -107,46 +107,28 @@ if __name__ == "__main__":
         pass
     else:
         print("Could not detect best compiler. Specify one with --compiler (gcc, g++)")
+    total = 0
     if args.generator != '':
-        import os
-        import glob
-
-        # Get a list of all the file paths that ends with .txt from in specified directory
-        fileList = glob.glob(str.format("{0}\\{1}\\tests\\*.in", local_dir, problem_name))
-        for filePath in fileList:
-            # noinspection PyBroadException
-            try:
-                os.remove(filePath)
-            except Exception:
-                print("Error while deleting file : ", filePath)
-
-        fileList = glob.glob(str.format("{0}\\{1}\\tests\\*.ok", local_dir, problem_name))
-        for filePath in fileList:
-            # noinspection PyBroadException
-            try:
-                os.remove(filePath)
-            except Exception:
-                print("Error while deleting file : ", filePath)
-
         tests_gen = []
         for i in range(args.tests):
             subprocess.call(str.format("{0}\\{1}\\tests\\{2}", local_dir, problem_name, args.generator),
                             cwd=str.format("{0}\\{1}\\tests", local_dir, problem_name))
-            shutil.copy(str.format("{0}/{1}/tests/{1}.in", local_dir, problem_name),
-                        str.format("{0}/{1}/tests/{2}-{1}.in", local_dir, problem_name, i))
-            shutil.copy(str.format("{0}/{1}/tests/{1}.ok", local_dir, problem_name),
-                        str.format("{0}/{1}/tests/{2}-{1}.ok", local_dir, problem_name, i))
-            tests_gen.append(str.format('{0} {1}\n', i, 100/args.tests))
-        with open(str.format('{0}/{1}/tests/tests.txt', local_dir, problem_name), 'w') as f:
-            f.writelines(tests_gen)
-
-    with open(str.format('{0}/{1}/tests/tests.txt', local_dir, problem_name)) as f:
-        tests = f.read().splitlines()
-    total = 0
-    for i in range(len(tests)):
-        p = tests[i].split(' ')[1]
-        res = evaluate_test(tests[i].split(' ')[0])
-        print(str.format("Test: {0} ~ {1} ~ {2}p", tests[i].split(' ')[0], res[1], res[0] * float(p)))
-        total += res[0] * float(p)
+            shutil.move(str.format("{0}/{1}/tests/{1}.in", local_dir, problem_name),
+                        str.format("{0}/{1}/tests/{2}-{1}.in", local_dir, problem_name, 'gen'))
+            shutil.move(str.format("{0}/{1}/tests/{1}.ok", local_dir, problem_name),
+                        str.format("{0}/{1}/tests/{2}-{1}.ok", local_dir, problem_name, 'gen'))
+            tests_gen.append(str.format('{0} {1}\n', 0, 100/args.tests))
+            p = 100/args.tests
+            res = evaluate_test('gen')
+            print(str.format("Test: {0} ~ {1} ~ {2}p", i, res[1], res[0] * float(p)))
+            total += res[0] * float(p)
+    else:
+        with open(str.format('{0}/{1}/tests/tests.txt', local_dir, problem_name)) as f:
+            tests = f.read().splitlines()
+        for i in range(len(tests)):
+            p = tests[i].split(' ')[1]
+            res = evaluate_test(tests[i].split(' ')[0])
+            print(str.format("Test: {0} ~ {1} ~ {2}p", tests[i].split(' ')[0], res[1], res[0] * float(p)))
+            total += res[0] * float(p)
     print(str.format("Total: {0}p", total))
 
